@@ -39,6 +39,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "docutils"
     "packaging"
     "sqlmodel"
+    "smart-open"
   ];
   dependencies = with python3Packages; [
     conda-inject
