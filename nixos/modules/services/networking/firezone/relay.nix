@@ -67,10 +67,10 @@ in
 
       apiUrl = mkOption {
         type = types.strMatching "^wss://.+/$";
-        example = "wss://firezone.example.com/api/";
+        example = "wss://api.firezone.example.com/";
         description = ''
           The URL of your firezone server's API. This should be the same
-          as your server's setting for {option}`services.firezone.server.settings.api.externalUrl`,
+          as your server's setting for {option}`services.firezone.server.api.externalUrl`,
           but with `wss://` instead of `https://`.
         '';
       };
@@ -139,7 +139,7 @@ in
       environment = {
         FIREZONE_API_URL = cfg.apiUrl;
         FIREZONE_NAME = cfg.name;
-        FIREZONE_TELEMETRY = boolToString cfg.enableTelemetry;
+        TELEMETRY = boolToString cfg.enableTelemetry;
 
         PUBLIC_IP4_ADDR = cfg.publicIpv4;
         PUBLIC_IP6_ADDR = cfg.publicIpv6;

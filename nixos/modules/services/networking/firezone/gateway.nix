@@ -44,10 +44,10 @@ in
 
       apiUrl = mkOption {
         type = types.strMatching "^wss://.+/$";
-        example = "wss://firezone.example.com/api/";
+        example = "wss://api.firezone.example.com/";
         description = ''
           The URL of your firezone server's API. This should be the same
-          as your server's setting for {option}`services.firezone.server.settings.api.externalUrl`,
+          as your server's setting for {option}`services.firezone.server.api.externalUrl`,
           but with `wss://` instead of `https://`.
         '';
       };
