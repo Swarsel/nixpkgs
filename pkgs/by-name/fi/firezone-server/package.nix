@@ -2,78 +2,76 @@
   lib,
   nixosTests,
   fetchFromGitHub,
-  beam27Packages,
-  gitMinimal,
+  beam29Packages,
   pnpm_10,
   fetchPnpmDeps,
   pnpmConfigHook,
-  nodejs,
-  tailwindcss_3,
+  nodejs_22,
+  tailwindcss_4,
   esbuild,
-
-  mixReleaseName ? "domain", # "domain" "web" or "api"
 }:
-beam27Packages.mixRelease rec {
-  pname = "firezone-server-${mixReleaseName}";
-  version = "0-unstable-2025-08-31";
+let
+  # Upstream builds the portal with Elixir 1.20 on OTP 29, see elixir/.tool-versions
+  beamPackages = beam29Packages.overrideScope (_: prev: { elixir = prev.elixir_1_20; });
+in
+beamPackages.mixRelease (finalAttrs: {
+  pname = "firezone-server";
+  version = "0-unstable-2026-10-30";
 
-  src = "${
-    fetchFromGitHub {
-      owner = "firezone";
-      repo = "firezone";
-      rev = "f86719db19b848ab757995361032c1f2b7927d13";
-      hash = "sha256-MrW+mnVMi3mOwkcWDsY84rVBaX1qJPmqkecdH8I2ng0=";
+  src = fetchFromGitHub {
+    owner = "firezone";
+    repo = "firezone";
+    rev = "6cc4aea7123220786c374354cb70fff0e505be4e";
+    hash = "sha256-b+TSp//Y7AJOrGW/fIA0vMZLDXP20XW1/xTQkfoWCFM=";
+  };
+  sourceRoot = "${finalAttrs.src.name}/elixir";
 
-      # This is necessary to allow sending mails via SMTP, as the default
-      # SMTP adapter is current broken: https://github.com/swoosh/swoosh/issues/785
-      postFetch = ''
-        ${lib.getExe gitMinimal} -C $out apply ${./0000-add-mua.patch}
-      '';
-    }
-  }/elixir";
+  patches = [
+    # This is necessary to allow sending mails via SMTP, as the default
+    # SMTP adapter is current broken: https://github.com/swoosh/swoosh/issues/785
+    ./0000-add-mua.patch
+  ];
+
+  mixFodDeps = beamPackages.fetchMixDeps {
+    pname = "mix-deps-${finalAttrs.pname}-${finalAttrs.version}";
+    inherit (finalAttrs)
+      src
+      version
+      patches
+      sourceRoot
+      ;
+    hash = "sha256-kphCmgzQaYcctZHofIdMBc1Q3WlbHI8FcbIy8R442J4=";
+  };
 
   pnpmDeps = fetchPnpmDeps {
-    inherit pname version;
+    inherit (finalAttrs) pname version src;
     pnpm = pnpm_10;
-    src = "${src}/apps/web/assets";
-    fetcherVersion = 4;
-    hash = "sha256-Uq6dAYYWT8G6upYcNEzVc8Gb2HUj8SaWRD0/w0quaRE=";
+    sourceRoot = "${finalAttrs.src.name}/elixir/assets";
+    fetcherVersion = 5;
+    hash = "sha256-aW0WuY4SzBUKUedgO+OIahSb7s7rpcHF9NdRBwVvX2I=";
   };
-  pnpmRoot = "apps/web/assets";
-
-  preBuild = ''
-    cat >> config/config.exs <<EOF
-    config :tailwind, path: "${lib.getExe tailwindcss_3}"
-    config :esbuild, path: "${lib.getExe esbuild}"
-    EOF
-
-    cat >> config/runtime.exs <<EOF
-    config :tzdata, :data_dir, System.fetch_env!("TZDATA_DIR")
-    EOF
-  '';
-
-  postBuild = ''
-    pushd apps/web
-    # for external task you need a workaround for the no deps check flag
-    # https://github.com/phoenixframework/phoenix/issues/2690
-    mix do deps.loadpaths --no-deps-check, assets.deploy
-    mix do deps.loadpaths --no-deps-check, phx.digest priv/static
-    popd
-  '';
+  pnpmRoot = "assets";
 
   nativeBuildInputs = [
     pnpmConfigHook
     pnpm_10
-    nodejs
+    nodejs_22
   ];
 
-  inherit mixReleaseName;
+  mixReleaseName = "portal";
 
-  mixFodDeps = beam27Packages.fetchMixDeps {
-    pname = "mix-deps-${pname}-${version}";
-    inherit src version;
-    hash = "sha256-h3l7HK9dxNmkHWfJyCOCXmCvFOK+mZtmszhRv0zxqoo=";
-  };
+  preBuild = ''
+    cat >> config/config.exs <<EOF
+    config :tailwind, path: "${lib.getExe tailwindcss_4}"
+    config :esbuild, path: "${lib.getExe esbuild}"
+    EOF
+  '';
+
+  postBuild = ''
+    # for external task you need a workaround for the no deps check flag
+    # https://github.com/phoenixframework/phoenix/issues/2690
+    mix do deps.loadpaths --no-deps-check, assets.deploy
+  '';
 
   passthru.tests = {
     inherit (nixosTests) firezone;
@@ -87,7 +85,7 @@ beam27Packages.mixRelease rec {
       oddlama
       patrickdag
     ];
-    mainProgram = mixReleaseName;
+    mainProgram = "portal";
     platforms = lib.platforms.linux;
   };
-}
+})
